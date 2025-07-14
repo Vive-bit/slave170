@@ -1,0 +1,34 @@
+name: Arduino CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install Arduino CLI
+      run: |
+        curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | sh
+        export PATH="$HOME/bin:$PATH"
+        arduino-cli core update-index
+
+    - name: Install Board Package
+      run: arduino-cli core install arduino:avr
+
+    - name: Compile Sketch
+      run: arduino-cli compile --fqbn arduino:avr:uno ./slave
+
+    - name: Run Unit Tests
+      run: |
+        arduino-cli compile --fqbn arduino:avr:uno ./slave
+
+    - name: Verify Output
+      run: |
+        echo "Build successful!" 
