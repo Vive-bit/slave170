@@ -16,7 +16,6 @@ jobs:
     - name: Install Arduino CLI
       run: |
         curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | sh
-        # Fügt den bin‑Ordner zu PATH für alle folgenden Steps hinzu:
         echo "${{ github.workspace }}/bin" >> $GITHUB_PATH
 
     - name: Update Core Index
@@ -25,8 +24,8 @@ jobs:
     - name: Install AVR‑Package
       run: arduino-cli core install arduino:avr
 
-    - name: Compile Sketch
-      run: arduino-cli compile --fqbn arduino:avr:uno ./slave
+    - name: Compile Sketch for Mega
+      run: arduino-cli compile --fqbn arduino:avr:mega ./slave
 
     - name: Verify Output
       run: echo "Build successful!"
