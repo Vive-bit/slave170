@@ -10,25 +10,26 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    # <-- hier PATH festlegen -->
+    env:
+      PATH: ${{ github.workspace }}/bin:${{ env.PATH }}
+
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - name: Install Arduino CLI
-      run: |
-        curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | sh
-        export PATH="$HOME/bin:$PATH"
-        arduino-cli core update-index
+      - name: Install Arduino CLI
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | sh
+          arduino-cli core update-index
 
-    - name: Install Board Package
-      run: arduino-cli core install arduino:avr
+      - name: Install Board Package
+        run: arduino-cli core install arduino:avr
 
-    - name: Compile Sketch
-      run: arduino-cli compile --fqbn arduino:avr:uno ./slave
+      - name: Compile Sketch
+        run: arduino-cli compile --fqbn arduino:avr:uno ./slave
 
-    - name: Run Unit Tests
-      run: |
-        arduino-cli compile --fqbn arduino:avr:uno ./slave
+      - name: Run Unit Tests
+        run: arduino-cli compile --fqbn arduino:avr:uno ./slave
 
-    - name: Verify Output
-      run: |
-        echo "Build successful!" 
+      - name: Verify Output
+        run: echo "Build successful!"
