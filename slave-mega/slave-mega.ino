@@ -178,10 +178,14 @@ bool handleRequest(const uint8_t* frame) {
 }
 
 void setup() {
+    pinMode(STATUS_LED_PIN, OUTPUT);
+    digitalWrite(STATUS_LED_PIN, HIGH);
+    delay(200);
+    digitalWrite(STATUS_LED_PIN, LOW);
+    
     pinMode(DE_RE_PIN, OUTPUT);
     digitalWrite(DE_RE_PIN, LOW);
 
-    pinMode(STATUS_LED_PIN, OUTPUT);
     for (uint8_t i = 0; i < SLAVE_ID; i++) {
         digitalWrite(STATUS_LED_PIN, HIGH);
         delay(80);
