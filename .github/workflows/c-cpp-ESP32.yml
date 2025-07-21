@@ -29,7 +29,7 @@ jobs:
         arduino-cli core install esp32:esp32
 
     - name: Compile Sketch for ESP32 DevKit
-      run: arduino-cli compile --fqbn esp32:esp32:esp32dev ./slave-esp32
+      run: arduino-cli compile --fqbn esp32:esp32:esp32doit-devkit-v1 ./slave-esp32
 
     - name: Verify Output
       run: echo "Build successful!"
