@@ -1,0 +1,28 @@
+name: Arduino CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install Arduino CLI
+      run: |
+        curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | sh
+        echo "${{ github.workspace }}/bin" >> $GITHUB_PATH
+
+    - name: Add ESP32 Core
+      run: arduino-cli core update-index && arduino-cli core install esp32:esp32
+
+    - name: Compile Sketch for ESP32 DevKit
+      run: arduino-cli compile --fqbn esp32:esp32:esp32dev ./slave-esp32
+
+    - name: Verify Output
+      run: echo "Build successful!"
