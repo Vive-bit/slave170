@@ -21,6 +21,7 @@ const unsigned long TIMEOUT_INTERVAL = 450;
 const unsigned long ERROR_INTERVAL = 3000;
 const unsigned long SUCCESS_INTERVAL = 100;
 
+static constexpr unsigned long MAX_ON_TIME = 30000;
 const unsigned long LAST_PING_TIMEOUT = 13000; // master sends every 10s
 static constexpr unsigned long BAUDRATE = 9600; // master
 
@@ -40,6 +41,13 @@ enum RequestType : uint8_t {
     XSEND = 0x02
 };
 /////////////////////////////////
+
+struct Expiry {
+  uint8_t pin;
+  unsigned long offTime;
+};
+Expiry expiries[48]; // tracking up to 48 pins 
+uint8_t expiryCount = 0;
 
 // CRC16
 uint16_t crc16(const uint8_t* data, size_t len) {
@@ -162,7 +170,30 @@ bool handleRequest(const uint8_t* frame) {
     }
 
     case XWRITE:
-      if (mode == XDIGITAL) digitalWrite(gpio_id, new_state ? HIGH : LOW);
+      if (mode == XDIGITAL) {
+        digitalWrite(gpio_id, new_state ? HIGH : LOW);
+
+        if (new_state) {
+            bool found = false;
+            for (uint8_t i = 0; i < expiryCount; i++) {
+                if (expiries[i].pin == gpio_id) {
+                    expiries[i].offTime = millis() + MAX_ON_TIME;
+                    found = true;
+                    break;
+                }
+            }
+            if (!found && expiryCount < sizeof(expiries)/sizeof(expiries[0])) {
+                expiries[expiryCount++] = { gpio_id, millis() + MAX_ON_TIME };
+            }
+        } else {
+            for (uint8_t i = 0; i < expiryCount; i++) {
+                if (expiries[i].pin == gpio_id) {
+                    expiries[i] = expiries[--expiryCount];
+                    break;
+                }
+              }
+          }
+      }
       else if (mode == XANALOG) analogWrite(gpio_id, new_state);
       else {
         setCurrentBlinkState(ERROR);
@@ -177,6 +208,17 @@ bool handleRequest(const uint8_t* frame) {
       setCurrentBlinkState(ERROR);
       return false;
   }
+}
+
+void autoOffCheck() {
+    unsigned long now = millis();
+    for (int8_t i = expiryCount - 1; i >= 0; i--) {
+        if ((long)(now - expiries[i].offTime) >= 0) {
+            digitalWrite(expiries[i].pin, LOW);
+            expiries[i] = expiries[--expiryCount];
+            setCurrentBlinkState(SUCCESS);
+        }
+    }
 }
 
 void setup() {
@@ -202,6 +244,7 @@ void setup() {
 
 void loop() {
     updateBlink();
+    autoOffCheck();
     
     while (Serial1.available() && Serial1.peek() != START_BYTE) {
         Serial1.read();
