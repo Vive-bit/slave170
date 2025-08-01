@@ -214,7 +214,7 @@ void autoOffCheck() {
         if ((long)(now - expiries[i].offTime) >= 0) {
             digitalWrite(expiries[i].pin, LOW);
             expiries[i] = expiries[--expiryCount];
-            setCurrentBlinkState(ERROR);
+            setCurrentBlinkState(SUCCESS);
         }
     }
 }
