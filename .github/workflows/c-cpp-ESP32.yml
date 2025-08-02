@@ -1,4 +1,4 @@
-name: Arduino CI
+name: Arduino CI (ESP32)
 
 on:
   push:
@@ -29,7 +29,7 @@ jobs:
         arduino-cli core install esp32:esp32
 
     - name: Compile Sketch for ESP32 DevKit
-      run: arduino-cli compile --fqbn esp32:esp32:esp32doit-devkit-v1 ./slave-esp32
+      run: arduino-cli compile --fqbn esp32:esp32:esp32doit-devkit-v1 slave-esp32/slave-esp32.ino
 
     - name: Verify Output
       run: echo "Build successful!"
