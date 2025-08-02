@@ -291,7 +291,7 @@ bool handleRequest(const uint8_t* f) {
         analogWrite(pin, val);
       } else {
         setCurrentBlinkState(ERROR);
-        return;
+        return false;
       }
 
       uint8_t payload[] = { byte(val >> 8), byte(val) };
