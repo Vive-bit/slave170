@@ -1,4 +1,4 @@
-name: Arduino CI
+name: Arduino CI (MEGA)
 
 on:
   push:
@@ -25,7 +25,7 @@ jobs:
       run: arduino-cli core install arduino:avr
 
     - name: Compile Sketch for Mega
-      run: arduino-cli compile --fqbn arduino:avr:mega ./slave-mega
+      run: arduino-cli compile --fqbn arduino:avr:mega slave-mega/slave-mega.ino
 
     - name: Verify Output
       run: echo "Build successful!"
