@@ -1,4 +1,4 @@
-name: Arduino CI
+name: Arduino CI (UNO)
 
 on:
   push:
@@ -25,7 +25,7 @@ jobs:
       run: arduino-cli core install arduino:avr
 
     - name: Compile Sketch for UNO
-      run: arduino-cli compile --fqbn arduino:avr:uno ./slave-uno
+      run: arduino-cli compile --fqbn arduino:avr:uno slave-uno/slave-uno.ino
 
     - name: Verify Output
       run: echo "Build successful!"
