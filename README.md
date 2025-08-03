@@ -53,7 +53,7 @@ Called "Protocol170" because the START_BYTE for the SLAVES is 0xAA... 170!
 - 1b `OPERATION`: XPING = 0x01, XREAD = 0x02, XWRITE = 0x03 (All available operations)
 - 1b `MODE`: XDIGITAL = 0x01, XANALOG = 0x02 (All available modes. Used for master requests)
 
-[PAYLOAD] = 0-MAX bytes
+[PAYLOAD] = 0...MAX bytes
 - variable
 
 [END / CRC] = 2 bytes
@@ -61,13 +61,13 @@ Called "Protocol170" because the START_BYTE for the SLAVES is 0xAA... 170!
 - 1b `CRC HIGH`
 
 ### TO MASTER (from SLAVE)
-- `START_BYTE` is always `0xAA` (TO SLAVE)
-- `FRAME_TYPE` is always `0x10` (FRAME_TYPE_REQUEST)
-- Always contains the `6-bytes` payload header as below
+- `START_BYTE` is always `0x7E` (TO MASTER)
+- `FRAME_TYPE` is always `0x20` (FRAME_TYPE_RESPONSE)
+- Always contains the `4-bytes` payload header as below
   
 ```
 [START_BYTE][FRAME_TYPE][LENGTH]
-[REQUEST_ID_HI][REQUEST_ID_LO][SLAVE_ID][REQUEST_TYPE][OPERATION][MODE][...]
+[REQUEST_ID_HI][REQUEST_ID_LO][SLAVE_ID][REQUEST_TYPE][...]
 [CRC_LO][CRC_HI]
 ```
 [HEADER] = 3 bytes
@@ -75,14 +75,12 @@ Called "Protocol170" because the START_BYTE for the SLAVES is 0xAA... 170!
 - 1b `FRAME_TYPE`: 0x10 OR 0x20 (`0x10 = FRAME_TYPE_REQUEST` (always by master) and `0x20 = FRAME_TYPE_RESPONSE` (always by slave))
 - 1b `LENGTH`: <until-max-length> (All the following bytes)
 
-[PAYLOAD HEADER] = 6 bytes
+[PAYLOAD HEADER] = 4 bytes
 - 2b `REQUEST_ID`: 0-65535 (Set by master, always 0 if invoked by slave)
 - 1b `SLAVE_ID`: 0-254 (Desired slave, `0xFF`/`255` = Broadcast)
-- 1b `REQUEST_TYPE`: XMASTER (Request is by master) = 0x01, XSLAVE (Request is by slave) = 0x02, XERROR (Request is an error by slave) = 0x03
-- 1b `OPERATION`: XPING = 0x01, XREAD = 0x02, XWRITE = 0x03 (All available operations)
-- 1b `MODE`: XDIGITAL = 0x01, XANALOG = 0x02 (All available modes. Used for master requests)
+- 1b `REQUEST_TYPE`: XSLAVE (Request is by slave) = 0x02, XERROR (Request is an error by slave) = 0x03
 
-[PAYLOAD] = 0-MAX bytes
+[PAYLOAD] = 0...MAX bytes
 - variable
 
 [END / CRC] = 2 bytes
