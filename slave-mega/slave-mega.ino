@@ -323,7 +323,7 @@ void feedByte(uint8_t b) {
       rxState = (rxLen > 4 && rxLen <= MAX_FRAME_LEN) ? RS_PAY : RS_WAIT;
       break;
     case RS_PAY:
-      if (rxPos < MAX_FRAME_LEN) { rxBuf[rxPos++] = b; crcUpdate(&rxCrc, b); } else {debugLog("REQUEST - Exceeded MAX_FRAME_LEN!"); sendErrorResponse(XLENGTH_MAX_FRAME);}
+      if (rxPos < MAX_FRAME_LEN) { rxBuf[rxPos++] = b; crcUpdate(&rxCrc, b); } else {debugLog("REQUEST - Exceeded MAX_FRAME_LEN!"); sendErrorResponse(XLENGTH_MAX_FRAME); rxState = RS_WAIT; }
       if (rxPos >= rxLen - 2) {
           rxState = RS_CRC1;
       }
