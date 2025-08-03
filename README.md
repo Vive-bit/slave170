@@ -1,27 +1,32 @@
 # Slave170 - RS485 Protocol 170 Slave
+Slave170 is a firmware that acts as a slave in my 'Protocol 170'. It responds to master requests and signals status via an LED.
+Currently used as a slave for my master.
+Called "Protocol170" because the START_BYTE for the SLAVES is 0xAA... 170!
 
-**Kurzbeschreibung**  
-Slave170 ist eine Firmware, die als Slave im Protokoll 170 agiert. Sie reagiert auf Anfragen eines Masters und signalisiert Status über eine LED.
-
-## Voraussetzungen
+## Requirements
 
 - Arduino MEGA (ATmega2560)  / Arduino UNO / ESP32
-- Arduino-CLI oder Arduino IDE  
-- Anschluss über UART (Serial1)  / Serial
+- Arduino-CLI or Arduino IDE  
+- Connection to UART (Serial1) / Serial (and other pins)
+- MAX485 (RS485) Module (5V Use case!)
 
 ## Configuration
-- `SLAVE_ID`: 0-255 Possible IDs
+- `SLAVE_ID`: 0-254 possible IDs `(0xFF = Broadcast)`
 - `BAUDRATE`: Default 9600
 
 ## Bahavior & LED Status
-| Zustand     | Typ     | Bedeutung                                |
+| State       | Type    | Meaning                                  |
 | ----------- | ------- | ---------------------------------------- |
-| **IDLE**    | OK      | Warten auf Anfrage (Betriebsbereit)      |
-| **TIMEOUT** | WARNING | Keine Pings mehr eingetroffen            |
-| **SUCCESS** | OK      | Anfrage erhalten und korrekt beantwortet |
-| **ERROR**   | ERROR   | Fehlerhaftes Frame oder CRC-Fehler       |
+| **IDLE**    | OK      | Waiting for request (ready to operate)   |
+| **TIMEOUT** | WARNING | No pings received recently               |
+| **SUCCESS** | OK      | Request received and answered correctly  |
+| **ERROR**   | ERROR   | Invalid frame, CRC error, ...            |
   
 ## Troubleshooting
-- **Keine LED-Aktivität**: Prüfe BAUDRATE und Anschlüsse an Serial1 (vielleicht sogar delays im Programm prüfen).
-- **Permanent ERROR**: Testframe prüfen, CRC korrekt berechnen.
-- **TIMEOUT zu früh**: Timeout-Intervall im Code anpassen.
+- **No LED-activity**: Check BAUDRATE and connections to Serial1 (also verify if any delays in the program).
+- **Always ERROR**: Check test frame, verify correct CRC calculation, ...
+- **MAKE SURE**: Always sync internal params with master etc.
+- **WARNING**: There are no plausibility checks for if the requested pin exists, ... etc.
+
+## Debugging
+- `#define DEBUG_MODE`: Enabled debugging, Serial baud 9600 will be used to transmit some logs. (Some controllers use the same Serial ports to communicate w the master! If uploading code fails, remove pin connection here!)
