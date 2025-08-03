@@ -29,4 +29,4 @@ Called "Protocol170" because the START_BYTE for the SLAVES is 0xAA... 170!
 - **WARNING**: There are no plausibility checks for if the requested pin exists, ... etc.
 
 ## Debugging
-- `#define DEBUG_MODE`: Enabled debugging, Serial baud 9600 will be used to transmit some logs. (Some controllers use the same Serial ports to communicate w the master! If uploading code fails, remove pin connection here!)
+- `#define DEBUG_MODE`: Enabled debugging, Serial baud 9600 will be used to transmit some logs. (Some controllers use the same Serial ports to communicate w the module I use, If uploading code fails, remove pin connection of TX/RX!)
