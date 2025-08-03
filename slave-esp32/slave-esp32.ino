@@ -13,7 +13,8 @@ static constexpr uint8_t RX_PIN = 16;
 static constexpr uint8_t TX_PIN = 17;
 
 // PROTOCOL_HEADER
-static constexpr uint8_t START_BYTE          = 0x7E;
+static constexpr uint8_t START_BYTE          = 0xAA;
+static constexpr uint8_t START_BYTE_MASTER   = 0x7E;
 static constexpr uint8_t FRAME_TYPE_REQUEST  = 0x10;
 static constexpr uint8_t FRAME_TYPE_RESPONSE = 0x20;
 
@@ -129,7 +130,7 @@ void sendErrorResponse(uint8_t errorCode, uint16_t reqId = 0) {
   uint8_t header[] = { byte(reqId >> 8), byte(reqId), SLAVE_ID, XERROR };
   uint8_t payload[] = { errorCode };
 
-  uint8_t len = buildFrame(frame, START_BYTE, FRAME_TYPE_RESPONSE, header, sizeof(header), payload, sizeof(payload));
+  uint8_t len = buildFrame(frame, START_BYTE_MASTER, FRAME_TYPE_RESPONSE, header, sizeof(header), payload, sizeof(payload));
   if (len > 0) sendFrame(frame, len);
 }
 
@@ -255,7 +256,7 @@ bool handleRequest(const uint8_t* f) {
     case XPING: {
       lastPingTime = millis();
       uint8_t payload[] = { };
-      uint8_t len = buildFrame(frame, START_BYTE, FRAME_TYPE_RESPONSE, header, sizeof(header), payload, sizeof(payload));
+      uint8_t len = buildFrame(frame, START_BYTE_MASTER, FRAME_TYPE_RESPONSE, header, sizeof(header), payload, sizeof(payload));
       if (len > 0) sendFrame(frame, len);
       setCurrentBlinkState(SUCCESS);
       debugLog("REQUEST - Ping OK");
@@ -295,7 +296,7 @@ bool handleRequest(const uint8_t* f) {
       }
 
       uint8_t payload[] = { byte(val >> 8), byte(val) };
-      uint8_t len = buildFrame(frame, START_BYTE, FRAME_TYPE_RESPONSE, header, sizeof(header), payload, sizeof(payload));
+      uint8_t len = buildFrame(frame, START_BYTE_MASTER, FRAME_TYPE_RESPONSE, header, sizeof(header), payload, sizeof(payload));
       if (len > 0) sendFrame(frame, len);
       setCurrentBlinkState(SUCCESS);
       debugLog("REQUEST - Write OK");
