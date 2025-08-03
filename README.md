@@ -1,5 +1,5 @@
 # Slave170 - RS485 Protocol 170 Slave
-Slave170 is a firmware that acts as a slave in my 'Protocol 170'. It responds to master requests and signals status via an LED.
+Slave170 is a firmware that acts as a slave in my 'Protocol 170'. It responds to master requests and signals status via an LED and the RS485 module.
 Currently used as a slave for my master.
 Called "Protocol170" because the START_BYTE for the SLAVES is 0xAA... 170!
 
