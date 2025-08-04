@@ -8,7 +8,7 @@
 static constexpr uint8_t SLAVE_ID = 0x01;
 static constexpr uint8_t STATUS_LED_PIN = 4;
 static constexpr uint8_t DE_RE_PIN = 2;
-static constexpr unsigned long BAUDRATE = 9600;
+static constexpr unsigned long BAUDRATE = 38400;
 
 // PROTOCOL_HEADER
 static constexpr uint8_t START_BYTE          = 0xAA;
@@ -24,8 +24,8 @@ enum RequestType : uint8_t { XMASTER = 0x01, XSLAVE = 0x02, XERROR = 0x03 };
 enum ErrorType : uint8_t { XLENGTH_PING = 0x01, XLENGTH_READ = 0x02, XLENGTH_WRITE = 0x03, MISSING_OPERATION = 0x04, XLENGTH_MAX_FRAME = 0x05, XPING_TIMEOUT = 0x06, XTIMELIMIT_EXCEEDED = 0x07, XRESENDING_FRAME = 0x08 };
 
 // WATCHDOG
-static constexpr unsigned long MAX_ON_TIME = 30000; // max pin HIGH time
-static constexpr unsigned long LAST_PING_TIMEOUT = 13000; // 10s is master cycle
+static constexpr unsigned long MAX_ON_TIME = 30000; // max pin HIGH time [microseconds]
+static constexpr unsigned long LAST_PING_TIMEOUT = 13000; // 10s is master cycle [microseconds]
 static constexpr uint8_t VERSION = 0x01;
 
 // RAM-Buffer
@@ -35,17 +35,17 @@ static constexpr uint8_t DEFAULT_TEMP_MAX_FRAME_SIZE = 32;
 static constexpr uint8_t MAX_AUTO_OFF_EXPIRY_RETRIES = 8;
 
 // Delay calc
-static constexpr uint32_t FUDGE_US = 1000;
+static constexpr uint32_t FUDGE_US = 70000; // [microseconds]
 static constexpr uint32_t BIT_US = 1000000UL / BAUDRATE;
 static constexpr uint32_t BYTE_US = BIT_US * 10; // 1 byte = 10 bits (start + 8 bit + end)
-static constexpr uint8_t BYTE_OFFSET = 5; // bytes to add to total bytes
+static constexpr uint8_t BYTE_OFFSET = 7; // bytes to add to total bytes
 
 // Feedback
 static constexpr unsigned long IDLE_INTERVAL = 1500;
 static constexpr unsigned long TIMEOUT_INTERVAL = 450;
 static constexpr unsigned long ERROR_INTERVAL = 3000;
 static constexpr unsigned long SUCCESS_INTERVAL = 100;
-static constexpr unsigned long INITIALIZING_ID_INTERVAL = 10;
+static constexpr unsigned long INITIALIZING_ID_INTERVAL = 10000; // [microseconds]
 
 const unsigned long startMillis = millis();
 
@@ -120,8 +120,8 @@ void protocolBegin() {
 
   // SlaveId blinker
   for (uint8_t i = 0; i < SLAVE_ID; i++) {
-    digitalWrite(STATUS_LED_PIN, HIGH); delay(INITIALIZING_ID_INTERVAL);
-    digitalWrite(STATUS_LED_PIN, LOW);  delay(INITIALIZING_ID_INTERVAL);
+    digitalWrite(STATUS_LED_PIN, HIGH); delayMicroseconds(INITIALIZING_ID_INTERVAL);
+    digitalWrite(STATUS_LED_PIN, LOW);  delayMicroseconds(INITIALIZING_ID_INTERVAL);
   }
 
   setCurrentBlinkState(TIMEOUT); // we enter timeout directly
@@ -245,8 +245,8 @@ bool handleRequest(const uint8_t* f, const uint32_t frameLen) {
   uint16_t reqId = (uint16_t(f[0]) << 8) | f[1];
   uint8_t slave = f[2];
   RequestType type = RequestType(f[3]);
-  Operation op  = Operation(f[4]);
-  Mode mode     = Mode(f[5]);
+  Operation op = Operation(f[4]);
+  Mode mode = Mode(f[5]);
   
   delayMicroseconds(calcSendDelay(frameLen));
 
@@ -274,9 +274,10 @@ bool handleRequest(const uint8_t* f, const uint32_t frameLen) {
       lastPingTime = millis();
       unsigned long elapsedMillis = lastPingTime - startMillis;
       unsigned long elapsedSeconds = elapsedMillis / 1000;
-      unsigned long elapsedHours = elapsedSeconds / 3600;
-      uint8_t lowByteTime = elapsedHours & 0xFF;
-      uint8_t highByteTime = (elapsedHours >> 8) & 0xFF;
+      unsigned long elapsedMinutes = elapsedSeconds / 3600;
+      if (elapsedMinutes >= 0xFFFF) elapsedMinutes = 0xFFFF;
+      uint8_t lowByteTime = elapsedMinutes & 0xFF;
+      uint8_t highByteTime = (elapsedMinutes >> 8) & 0xFF;
       uint8_t payload[] = { VERSION, lowByteTime, highByteTime };
       uint8_t len = buildFrame(frame, START_BYTE_MASTER, FRAME_TYPE_RESPONSE, header, sizeof(header), payload, sizeof(payload));
       if (len > 0) sendFrame(frame, len);
