@@ -235,7 +235,7 @@ uint32_t calcSendDelay(uint32_t frameLen) {
 }
 
 // Request handler
-bool handleRequest(const uint8_t* f, uint32_t frameLen) {
+bool handleRequest(const uint8_t* f, const uint32_t frameLen) {
   if (!f) return false;
 
   // payload header
