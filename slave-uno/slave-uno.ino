@@ -274,7 +274,7 @@ bool handleRequest(const uint8_t* f, const uint32_t frameLen) {
       lastPingTime = millis();
       unsigned long elapsedMillis = lastPingTime - startMillis;
       unsigned long elapsedSeconds = elapsedMillis / 1000;
-      unsigned long elapsedMinutes = elapsedSeconds / 3600;
+      unsigned long elapsedMinutes = elapsedSeconds / 60;
       if (elapsedMinutes >= 0xFFFF) elapsedMinutes = 0xFFFF;
       uint8_t lowByteTime = elapsedMinutes & 0xFF;
       uint8_t highByteTime = (elapsedMinutes >> 8) & 0xFF;
