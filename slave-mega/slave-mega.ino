@@ -27,6 +27,7 @@ enum ErrorType : uint8_t { XLENGTH_PING = 0x01, XLENGTH_READ = 0x02, XLENGTH_WRI
 // WATCHDOG
 static constexpr unsigned long MAX_ON_TIME = 30000; // max pin HIGH time
 static constexpr unsigned long LAST_PING_TIMEOUT = 13000; // 10s is master cycle
+static constexpr uint8_t VERSION = 0x01;
 
 // RAM-Buffer
 static constexpr uint8_t MAX_FRAME_LEN = 64;
@@ -46,6 +47,8 @@ static constexpr unsigned long TIMEOUT_INTERVAL = 450;
 static constexpr unsigned long ERROR_INTERVAL = 3000;
 static constexpr unsigned long SUCCESS_INTERVAL = 100;
 static constexpr unsigned long INITIALIZING_ID_INTERVAL = 10;
+
+unsigned long startMillis = millis();
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -274,6 +277,12 @@ bool handleRequest(const uint8_t* f, const uint32_t frameLen) {
   switch (op) {
     case XPING: {
       lastPingTime = millis();
+      unsigned long elapsedMillis = lastPingTime - startMillis;
+      unsigned long elapsedSeconds = elapsedMillis / 1000;
+      unsigned long elapsedHours = elapsedSeconds / 3600;
+      uint8_t lowByteTime = elapsedHours & 0xFF;
+      uint8_t highByteTime = (elapsedHours >> 8) & 0xFF;
+      uint8_t payload[] = { VERSION, lowByteTime, highByteTime };
       uint8_t payload[] = { };
       uint8_t len = buildFrame(frame, START_BYTE_MASTER, FRAME_TYPE_RESPONSE, header, sizeof(header), payload, sizeof(payload));
       if (len > 0) sendFrame(frame, len);
@@ -356,7 +365,7 @@ void feedByte(uint8_t b) {
       //rxCrc = (rxCrc & 0x00FF) | (uint16_t(b) << 8);
 
       if (rxCrc == 0) {
-        if (rxBuf[2] == SLAVE_ID || rxBuf[2] == 0xFF) {if (!handleRequest(rxBuf, sizeof(rxBuf) + 3 + 2) debugLog("REQUEST - Error occured!");}
+        if (rxBuf[2] == SLAVE_ID || rxBuf[2] == 0xFF) {if (!handleRequest(rxBuf, rxLen + 3 + 2) debugLog("REQUEST - Error occured!");}
         else setCurrentBlinkState(ERROR);
       } else {setCurrentBlinkState(ERROR); debugLog("REQUEST - CRC error!");}
       rxState = RS_WAIT;
