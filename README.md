@@ -60,6 +60,7 @@ Called "Protocol170" because the START_BYTE for the SLAVES is 0xAA... 170!
 - 1b `CRC LOW`
 - 1b `CRC HIGH`
 
+# Frames
 ## Frame to MASTER (from SLAVE)
 - `START_BYTE` is always `0x7E` (TO MASTER)
 - `FRAME_TYPE` is always `0x20` (FRAME_TYPE_RESPONSE)
@@ -88,7 +89,7 @@ Called "Protocol170" because the START_BYTE for the SLAVES is 0xAA... 170!
 - 1b `CRC HIGH`
 
 # Available Operation types
-- `XPING`: Mainly used to ensure life of slave. Returns:
+## `XPING`: Mainly used to ensure life of slave. Returns:
 ```
 [VERSION][RUNTIME_LO][RUNTIME_HI]
 ```
@@ -96,16 +97,48 @@ Called "Protocol170" because the START_BYTE for the SLAVES is 0xAA... 170!
 - 1b `VERSION`: Current slave version as hex
 - 2b `RUNTIME`: Active time since program startup (Format: Minutes, maximum results as `0xFFFF`)
 
-- `XREAD`: Current value of a pin. Returns:
+## `XREAD`: Current value of a pin. Returns:
 ```
 [VALUE_LO][VALUE_HI]
 ```
 [PAYLOAD] = 2 bytes
 - 2b `VALUE`: Current pin value, if the `Mode` from the payload header is invalid, returns `0`
 
-- `XWRITE`: Writes a new value to a pin. Returns:
+## `XWRITE`: Writes a new value to a pin. Returns:
 ```
 [NEW_VALUE_LO][NEW_VALUE_HI]
 ```
 [PAYLOAD] = 2 bytes
 - 2b `NEW_VALUE_HI`: Returns the written value
+
+# Send-delay
+- RS485 Half-Duplex `only 1 Participant sends at a time`
+- Master sends request `DE >> TX`
+- Slave can only send if Master is listening -> `wait for master DE >> RX`
+- Sending too fast -> ` Data collission / Startbyte gone / CRC Error`
+
+## Calculation
+BIT_US      = 1_000_000 / BAUDRATE
+BYTE_US     = BIT_US * 10 `10 = (Start + 8 Data bytes + Stop)`
+Delay_US    = (frameLen + BYTE_OFFSET) * BYTE_US + FUDGE_US
+
+## Parameters
+frameLen    = actual length of the recieved frame `Start/Payload header/Payload/CRC`
+BYTE_OFFSET = Security-Bytes for FIFO + DE/RE Switch
+FUDGE_US    = Set value for Interrupt-Latency / OS-Jitter
+
+## Example @38400 Baud
+BIT_US  = 26 µs
+BYTE_US = 260 µs
+frameLen = 11 Bytes
+BYTE_OFFSET = 7
+FUDGE_US = 60000
+Delay_US = (11 + 7) * 260 + 60000 ≈ 64680 µs (~64.7 ms)
+
+## Higher baudrate -> less Bit-time -> shorter waiting time
+9600 Baud ≈ ~79 ms
+38400 Baud ≈ ~65 ms
+115200 Baud ≈ ~61 ms
+
+- Too short waiting time -> `Packet loss!!!`
+- Waiting time too high -> `wasted protocol latency potential`
