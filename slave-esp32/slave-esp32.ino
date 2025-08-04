@@ -51,6 +51,8 @@ static constexpr unsigned long ERROR_INTERVAL = 3000;
 static constexpr unsigned long SUCCESS_INTERVAL = 100;
 static constexpr unsigned long INITIALIZING_ID_INTERVAL = 10;
 
+unsigned long startMillis = millis();
+
 ///////////////////////////////////////////////////////////////////////////////
 
 // Auto-off struct
@@ -273,8 +275,8 @@ bool handleRequest(const uint8_t* f, const uint32_t frameLen) {
 
   switch (op) {
     case XPING: {
+      unsigned long elapsedMillis = millis() - startMillis;
       lastPingTime = millis();
-      unsigned long elapsedMillis = millis();
       unsigned long elapsedSeconds = elapsedMillis / 1000;
       unsigned long elapsedHours = elapsedSeconds / 3600;
       uint8_t lowByteTime = elapsedHours & 0xFF;
@@ -361,7 +363,7 @@ void feedByte(uint8_t b) {
       //rxCrc = (rxCrc & 0x00FF) | (uint16_t(b) << 8);
 
       if (rxCrc == 0) {
-        if (rxBuf[2] == SLAVE_ID || rxBuf[2] == 0xFF) {if (!handleRequest(rxBuf, sizeof(rxBuf) + 3 + 2)) debugLog("REQUEST - Error occured!");}
+        if (rxBuf[2] == SLAVE_ID || rxBuf[2] == 0xFF) {if (!handleRequest(rxBuf, rxLen + 3 + 2)) debugLog("REQUEST - Error occured!");}
         else setCurrentBlinkState(ERROR);
       } else {setCurrentBlinkState(ERROR); debugLog("REQUEST - CRC error!");}
       rxState = RS_WAIT;
