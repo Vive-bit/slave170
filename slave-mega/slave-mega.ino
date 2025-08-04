@@ -8,7 +8,7 @@
 static constexpr uint8_t SLAVE_ID = 0x01;
 static constexpr uint8_t STATUS_LED_PIN = 4;
 static constexpr uint8_t DE_RE_PIN = 2;
-static constexpr unsigned long BAUDRATE = 9600;
+static constexpr unsigned long BAUDRATE = 38400;
 static constexpr unsigned long LOG_BAUDRATE = 9600;
 
 // PROTOCOL_HEADER
@@ -125,8 +125,8 @@ void protocolBegin() {
 
   // SlaveId blinker
   for (uint8_t i = 0; i < SLAVE_ID; i++) {
-    digitalWrite(STATUS_LED_PIN, HIGH); delay(INITIALIZING_ID_INTERVAL);
-    digitalWrite(STATUS_LED_PIN, LOW);  delay(INITIALIZING_ID_INTERVAL);
+    digitalWrite(STATUS_LED_PIN, HIGH); delayMicroseconds(INITIALIZING_ID_INTERVAL);
+    digitalWrite(STATUS_LED_PIN, LOW);  delayMicroseconds(INITIALIZING_ID_INTERVAL);
   }
 
   setCurrentBlinkState(TIMEOUT); // we enter timeout directly
@@ -366,7 +366,7 @@ void feedByte(uint8_t b) {
       //rxCrc = (rxCrc & 0x00FF) | (uint16_t(b) << 8);
 
       if (rxCrc == 0) {
-        if (rxBuf[2] == SLAVE_ID || rxBuf[2] == 0xFF) {if (!handleRequest(rxBuf, rxLen + 3 + 2) debugLog("REQUEST - Error occured!");}
+        if (rxBuf[2] == SLAVE_ID || rxBuf[2] == 0xFF) {if (!handleRequest(rxBuf, rxLen + 3 + 2)) debugLog("REQUEST - Error occured!");}
         else setCurrentBlinkState(ERROR);
       } else {setCurrentBlinkState(ERROR); debugLog("REQUEST - CRC error!");}
       rxState = RS_WAIT;
