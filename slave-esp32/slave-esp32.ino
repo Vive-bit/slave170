@@ -8,7 +8,7 @@
 static constexpr uint8_t SLAVE_ID = 0x01;
 static constexpr uint8_t STATUS_LED_PIN = 4;
 static constexpr uint8_t DE_RE_PIN = 2;
-static constexpr unsigned long BAUDRATE = 9600;
+static constexpr unsigned long BAUDRATE = 38400;
 static constexpr unsigned long LOG_BAUDRATE = 9600;
 
 static constexpr uint8_t RX_PIN = 16;
