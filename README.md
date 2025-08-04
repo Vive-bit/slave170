@@ -118,27 +118,27 @@ Called "Protocol170" because the START_BYTE for the SLAVES is 0xAA... 170!
 - Sending too fast -> ` Data collission / Startbyte gone / CRC Error`
 
 ## Calculation
-BIT_US      = 1_000_000 / BAUDRATE
-BYTE_US     = BIT_US * 10 `10 = (Start + 8 Data bytes + Stop)`
-Delay_US    = (frameLen + BYTE_OFFSET) * BYTE_US + FUDGE_US
+- BIT_US      = 1_000_000 / BAUDRATE
+- BYTE_US     = BIT_US * 10 `10 = (Start + 8 Data bytes + Stop)`
+- Delay_US    = (frameLen + BYTE_OFFSET) * BYTE_US + FUDGE_US
 
 ## Parameters
-frameLen    = actual length of the recieved frame `Start/Payload header/Payload/CRC`
-BYTE_OFFSET = Security-Bytes for FIFO + DE/RE Switch
-FUDGE_US    = Set value for Interrupt-Latency / OS-Jitter
+- frameLen    = actual length of the recieved frame `Start/Payload header/Payload/CRC`
+- BYTE_OFFSET = Security-Bytes for FIFO + DE/RE Switch
+- FUDGE_US    = Set value for Interrupt-Latency / OS-Jitter
 
 ## Example @38400 Baud
-BIT_US  = 26 µs
-BYTE_US = 260 µs
-frameLen = 11 Bytes
-BYTE_OFFSET = 7
-FUDGE_US = 60000
-Delay_US = (11 + 7) * 260 + 60000 ≈ 64680 µs (~64.7 ms)
+- BIT_US  = 26 µs
+- BYTE_US = 260 µs
+- frameLen = 11 Bytes
+- BYTE_OFFSET = 7
+- FUDGE_US = 60000
+- Delay_US = (11 + 7) * 260 + 60000 ≈ 64680 µs (~64.7 ms)
 
 ## Higher baudrate -> less Bit-time -> shorter waiting time
-9600 Baud ≈ ~79 ms
-38400 Baud ≈ ~65 ms
-115200 Baud ≈ ~61 ms
+- 9600 Baud ≈ ~79 ms
+- 38400 Baud ≈ ~65 ms
+- 115200 Baud ≈ ~61 ms
 
 - Too short waiting time -> `Packet loss!!!`
 - Waiting time too high -> `wasted protocol latency potential`
