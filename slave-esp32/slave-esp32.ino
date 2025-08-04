@@ -275,8 +275,8 @@ bool handleRequest(const uint8_t* f, const uint32_t frameLen) {
 
   switch (op) {
     case XPING: {
-      unsigned long elapsedMillis = millis() - startMillis;
       lastPingTime = millis();
+      unsigned long elapsedMillis = lastPingTime - startMillis;
       unsigned long elapsedSeconds = elapsedMillis / 1000;
       unsigned long elapsedHours = elapsedSeconds / 3600;
       uint8_t lowByteTime = elapsedHours & 0xFF;
