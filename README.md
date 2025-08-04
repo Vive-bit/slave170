@@ -109,7 +109,7 @@ Called "Protocol170" because the START_BYTE for the SLAVES is 0xAA... 170!
 [NEW_VALUE_LO][NEW_VALUE_HI]
 ```
 [PAYLOAD] = 2 bytes
-- 2b `NEW_VALUE_HI`: Returns the written value
+- 2b `NEW_VALUE_HI`: Returns the written value (`Warning: Pin will reset after 30s of inactivity (alongside with an error response, led activity and debug log)`)
 
 # Send-delay
 - RS485 Half-Duplex `only 1 Participant sends at a time`
