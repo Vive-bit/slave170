@@ -31,6 +31,7 @@ Called "Protocol170" because the START_BYTE for the SLAVES is 0xAA... 170!
 ## Debugging
 - `#define DEBUG_MODE`: Enabled debugging, Serial baud 38400 will be used to transmit some logs. (Some controllers use the same Serial ports to communicate w the module I use, If uploading code fails, remove pin connection of TX/RX!)
 
+# Frames
 ## Frame to SLAVE (from MASTER)
 - `START_BYTE` is always `0xAA` (TO SLAVE)
 - `FRAME_TYPE` is always `0x10` (FRAME_TYPE_REQUEST)
@@ -60,7 +61,6 @@ Called "Protocol170" because the START_BYTE for the SLAVES is 0xAA... 170!
 - 1b `CRC LOW`
 - 1b `CRC HIGH`
 
-# Frames
 ## Frame to MASTER (from SLAVE)
 - `START_BYTE` is always `0x7E` (TO MASTER)
 - `FRAME_TYPE` is always `0x20` (FRAME_TYPE_RESPONSE)
