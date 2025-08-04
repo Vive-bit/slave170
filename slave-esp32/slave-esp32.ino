@@ -51,7 +51,7 @@ static constexpr unsigned long ERROR_INTERVAL = 3000;
 static constexpr unsigned long SUCCESS_INTERVAL = 100;
 static constexpr unsigned long INITIALIZING_ID_INTERVAL = 10;
 
-unsigned long startMillis = millis();
+const unsigned long startMillis = millis();
 
 ///////////////////////////////////////////////////////////////////////////////
 
