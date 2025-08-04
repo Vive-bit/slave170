@@ -2,6 +2,8 @@
 
 #include <Arduino.h>
 
+//define DEBUG_MODE
+
 // SLAVE_CONFIG
 static constexpr uint8_t SLAVE_ID = 0x01;
 static constexpr uint8_t STATUS_LED_PIN = 4;
@@ -22,20 +24,28 @@ enum Mode : uint8_t { XDIGITAL = 0x01, XANALOG = 0x02 };
 enum RequestType : uint8_t { XMASTER = 0x01, XSLAVE = 0x02, XERROR = 0x03 };
 enum ErrorType : uint8_t { XLENGTH_PING = 0x01, XLENGTH_READ = 0x02, XLENGTH_WRITE = 0x03, MISSING_OPERATION = 0x04, XLENGTH_MAX_FRAME = 0x05, XPING_TIMEOUT = 0x06, XTIMELIMIT_EXCEEDED = 0x07, XRESENDING_FRAME = 0x08 };
 
-const unsigned long IDLE_INTERVAL = 1500;
-const unsigned long TIMEOUT_INTERVAL = 450;
-const unsigned long ERROR_INTERVAL = 3000;
-const unsigned long SUCCESS_INTERVAL = 100;
-
 // WATCHDOG
-static constexpr unsigned long MAX_ON_TIME = 30000;
-static constexpr unsigned long LAST_PING_TIMEOUT = 13000;
+static constexpr unsigned long MAX_ON_TIME = 30000; // max pin HIGH time
+static constexpr unsigned long LAST_PING_TIMEOUT = 13000; // 10s is master cycle
 
 // RAM-Buffer
 static constexpr uint8_t MAX_FRAME_LEN = 64;
 static constexpr uint8_t MAX_RETRY_ENTRIES = 4;
 static constexpr uint8_t DEFAULT_TEMP_MAX_FRAME_SIZE = 32;
 static constexpr uint8_t MAX_AUTO_OFF_EXPIRY_RETRIES = 8;
+
+// Delay calc
+static constexpr uint32_t FUDGE_US = 1000;
+static constexpr uint32_t BIT_US = 1000000UL / BAUDRATE;
+static constexpr uint32_t BYTE_US = BIT_US * 10; // 1 byte = 10 bits (start + 8 bit + end)
+static constexpr uint8_t BYTE_OFFSET = 5; // bytes to add to total bytes
+
+// Feedback
+static constexpr unsigned long IDLE_INTERVAL = 1500;
+static constexpr unsigned long TIMEOUT_INTERVAL = 450;
+static constexpr unsigned long ERROR_INTERVAL = 3000;
+static constexpr unsigned long SUCCESS_INTERVAL = 100;
+static constexpr unsigned long INITIALIZING_ID_INTERVAL = 10;
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -95,13 +105,14 @@ void setTransmitMode(bool en) {
 
 // Initializing
 void protocolBegin() {
+  debugLog("Initializing...");
   pinMode(STATUS_LED_PIN, OUTPUT);
   pinMode(DE_RE_PIN, OUTPUT);
   Serial1.begin(BAUDRATE);
 
-#ifdef DEBUG_MODE
+  #ifdef DEBUG_MODE
   Serial.begin(LOG_BAUDRATE);
-#endif
+  #endif
 
   // reset RAM explicitly
   memset(expiries, 0, sizeof(expiries));
@@ -111,8 +122,8 @@ void protocolBegin() {
 
   // SlaveId blinker
   for (uint8_t i = 0; i < SLAVE_ID; i++) {
-    digitalWrite(STATUS_LED_PIN, HIGH); delay(80);
-    digitalWrite(STATUS_LED_PIN, LOW);  delay(80);
+    digitalWrite(STATUS_LED_PIN, HIGH); delay(INITIALIZING_ID_INTERVAL);
+    digitalWrite(STATUS_LED_PIN, LOW);  delay(INITIALIZING_ID_INTERVAL);
   }
 
   setCurrentBlinkState(TIMEOUT); // we enter timeout directly
@@ -120,9 +131,9 @@ void protocolBegin() {
 
 // Debug
 void debugLog(const char* msg) {
-#ifdef DEBUG_MODE
+  #ifdef DEBUG_MODE
   Serial.println(msg);
-#endif
+  #endif
 }
 
 // Error event
@@ -188,7 +199,6 @@ void updateBlink() {
 
 // Send
 void sendFrame(const uint8_t* frame, uint8_t len) {
-  delay(10);
   setTransmitMode(true);
   Serial1.write(frame, len);
   Serial1.flush();
@@ -204,7 +214,7 @@ uint8_t buildFrame(
     const uint8_t* payload, uint8_t payload_len)
 {
     uint8_t total_len = 3 + header_len + payload_len + 2; // 3 = header, payload header, payload, crc
-    if (total_len > DEFAULT_TEMP_MAX_FRAME_SIZE) return 0;
+    if (total_len > DEFAULT_TEMP_MAX_FRAME_SIZE) { debugLog("Frame too large!"); return 0; }
     dest[0] = start;
     dest[1] = type;
     dest[2] = header_len + payload_len + 2; // LEN = payloads + CRC
@@ -223,8 +233,14 @@ uint8_t buildFrame(
     return total_len;
 }
 
+uint32_t calcSendDelay(uint32_t frameLen) {
+  uint32_t totalBytes = frameLen + BYTE_OFFSET;
+  uint32_t totalUs = totalBytes * BYTE_US;
+  return totalUs + FUDGE_US;
+}
+
 // Request handler
-bool handleRequest(const uint8_t* f) {
+bool handleRequest(const uint8_t* f, const uint32_t frameLen) {
   if (!f) return false;
 
   // payload header
@@ -233,6 +249,8 @@ bool handleRequest(const uint8_t* f) {
   RequestType type = RequestType(f[3]);
   Operation op  = Operation(f[4]);
   Mode mode     = Mode(f[5]);
+
+  delayMicroseconds(calcSendDelay(frameLen));
   
   if (type != XMASTER) {debugLog("REQUEST - Not by a master"); return false;}
 
@@ -338,7 +356,7 @@ void feedByte(uint8_t b) {
       //rxCrc = (rxCrc & 0x00FF) | (uint16_t(b) << 8);
 
       if (rxCrc == 0) {
-        if (rxBuf[2] == SLAVE_ID || rxBuf[2] == 0xFF) {if (!handleRequest(rxBuf)) debugLog("REQUEST - Error occured!");}
+        if (rxBuf[2] == SLAVE_ID || rxBuf[2] == 0xFF) {if (!handleRequest(rxBuf, sizeof(rxBuf) + 3 + 2) debugLog("REQUEST - Error occured!");}
         else setCurrentBlinkState(ERROR);
       } else {setCurrentBlinkState(ERROR); debugLog("REQUEST - CRC error!");}
       rxState = RS_WAIT;
