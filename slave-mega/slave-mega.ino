@@ -284,7 +284,6 @@ bool handleRequest(const uint8_t* f, const uint32_t frameLen) {
       uint8_t lowByteTime = elapsedMinutes & 0xFF;
       uint8_t highByteTime = (elapsedMinutes >> 8) & 0xFF;
       uint8_t payload[] = { VERSION, lowByteTime, highByteTime };
-      uint8_t payload[] = { };
       uint8_t len = buildFrame(frame, START_BYTE_MASTER, FRAME_TYPE_RESPONSE, header, sizeof(header), payload, sizeof(payload));
       if (len > 0) sendFrame(frame, len);
       setCurrentBlinkState(SUCCESS);
