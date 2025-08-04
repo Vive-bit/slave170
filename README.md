@@ -12,7 +12,7 @@ Called "Protocol170" because the START_BYTE for the SLAVES is 0xAA... 170!
 
 ## Configuration
 - `SLAVE_ID`: 0-254 possible IDs `(0xFF = Broadcast)`
-- `BAUDRATE`: Default 9600
+- `BAUDRATE`: Any (currently `38400`)
 
 ## Bahavior & LED Status
 | State       | Type    | Meaning                                  |
@@ -29,7 +29,7 @@ Called "Protocol170" because the START_BYTE for the SLAVES is 0xAA... 170!
 - **WARNING**: There are no plausibility checks for if the requested pin exists, ... etc.
 
 ## Debugging
-- `#define DEBUG_MODE`: Enabled debugging, Serial baud 9600 will be used to transmit some logs. (Some controllers use the same Serial ports to communicate w the module I use, If uploading code fails, remove pin connection of TX/RX!)
+- `#define DEBUG_MODE`: Enabled debugging, Serial baud 38400 will be used to transmit some logs. (Some controllers use the same Serial ports to communicate w the module I use, If uploading code fails, remove pin connection of TX/RX!)
 
 ## Frame to SLAVE (from MASTER)
 - `START_BYTE` is always `0xAA` (TO SLAVE)
@@ -86,3 +86,26 @@ Called "Protocol170" because the START_BYTE for the SLAVES is 0xAA... 170!
 [END / CRC] = 2 bytes
 - 1b `CRC LOW`
 - 1b `CRC HIGH`
+
+# Available Operation types
+- `XPING`: Mainly used to ensure life of slave. Returns:
+```
+[VERSION][RUNTIME_LO][RUNTIME_HI]
+```
+[PAYLOAD] = 3 bytes
+- 1b `VERSION`: Current slave version as hex
+- 2b `RUNTIME`: Active time since program startup (Format: Minutes, maximum results as `0xFFFF`)
+
+- `XREAD`: Current value of a pin. Returns:
+```
+[VALUE_LO][VALUE_HI]
+```
+[PAYLOAD] = 2 bytes
+- 2b `VALUE`: Current pin value, if the `Mode` from the payload header is invalid, returns `0`
+
+- `XWRITE`: Writes a new value to a pin. Returns:
+```
+[NEW_VALUE_LO][NEW_VALUE_HI]
+```
+[PAYLOAD] = 2 bytes
+- 2b `NEW_VALUE_HI`: Returns the written value
