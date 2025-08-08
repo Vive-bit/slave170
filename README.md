@@ -8,7 +8,7 @@ Called "Protocol170" because the START_BYTE for the SLAVES is 0xAA... 170!
 - Arduino MEGA (ATmega2560)  / Arduino UNO / ESP32
 - Arduino-CLI or Arduino IDE  
 - Connection to UART (Serial1) / Serial (and other pins)
-- MAX485 (RS485) Module (5V Use case!)
+- MAX485 (RS485) Module (5V Use case!), MAX3485 (RS485) Module for 3,3V, ...
 
 ## Configuration
 - `SLAVE_ID`: 0-254 possible IDs `(0xFF = Broadcast)`
