@@ -39,7 +39,7 @@ static constexpr uint8_t DEFAULT_TEMP_MAX_FRAME_SIZE = 32;
 static constexpr uint8_t MAX_AUTO_OFF_EXPIRY_RETRIES = 8;
 
 // Delay calc
-static constexpr uint32_t FUDGE_US = 60000; // [microseconds]
+static constexpr uint32_t FUDGE_US = 6667; // [microseconds] pyserial: 60000
 static constexpr uint32_t BIT_US = 1000000UL / BAUDRATE;
 static constexpr uint32_t BYTE_US = BIT_US * 10; // 1 byte = 10 bits (start + 8 bit + end)
 static constexpr uint8_t BYTE_OFFSET = 7; // bytes to add to total bytes
