@@ -133,6 +133,7 @@ Called "Protocol170" because the START_BYTE for the SLAVES is 0xAA... 170!
 - frameLen = 11 Bytes
 - BYTE_OFFSET = 7
 - FUDGE_US = 60000
+- `Why FUDGE_US = 60000us?: With python RPi.GPIO and pyserial, it took this amount of time. With my rust lib it takes 900% less time so 6667us. It depends on your speed.`
 - Delay_US = (11 + 7) * 260 + 60000 ≈ 64680 µs (~64.7 ms)
 
 ## Higher baudrate -> less Bit-time -> shorter waiting time
