@@ -1,7 +1,7 @@
 # Slave170 - RS485 Protocol 170 Slave
 Slave170 is a firmware that acts as a slave in my 'Protocol 170'. It responds to master requests and signals status via an LED and the RS485 module.
 Currently used as a slave for my master.
-Called "Protocol170" because the START_BYTE for the SLAVES is 0xAA... 170!
+- Called "Protocol170" because the START_BYTE for the SLAVES is 0xAA... 170!
 
 ## Requirements
 
@@ -15,21 +15,22 @@ Called "Protocol170" because the START_BYTE for the SLAVES is 0xAA... 170!
 - `BAUDRATE`: Any (currently `38400`)
 
 ## Bahavior & LED Status
-| State       | Type    | Meaning                                  |
-| ----------- | ------- | ---------------------------------------- |
-| **IDLE**    | OK      | Waiting for request (ready to operate)   |
-| **TIMEOUT** | WARNING | No pings received recently               |
-| **SUCCESS** | OK      | Request received and answered correctly  |
-| **ERROR**   | ERROR   | Invalid frame, CRC error, ...            |
+| State       | Type    | Meaning                                  | Identification                     |
+| ----------- | ------- | ---------------------------------------- | ---------------------------------- |
+| **IDLE**    | OK      | Waiting for request (ready to operate)   | Slow, steady blinking              |
+| **TIMEOUT** | WARNING | No pings received recently               | Blinking at a higher rate          |
+| **SUCCESS** | OK      | Request received and answered correctly  | Very fast blinking very short      |
+| **ERROR**   | ERROR   | Invalid frame, CRC error, ...            | Super slow blinking short          |
   
 ## Troubleshooting
 - **No LED-activity**: Check BAUDRATE and connections to Serial1 (also verify if any delays in the program).
 - **Always ERROR**: Check test frame, verify correct CRC calculation, ...
-- **MAKE SURE**: Always sync internal params with master etc.
-- **WARNING**: There are no plausibility checks for if the requested pin exists, ... etc.
+- Always sync internal params with master etc.
+- There are no plausibility checks for if the requested pin exists, ... etc.
+- Response but master doesnt notice: 90% chance the master is still in sending mode! Either add a delay to `FUDGE_US` or improve the programs speed by for example coding the serial in another, faster language!
 
 ## Debugging
-- `#define DEBUG_MODE`: Enabled debugging, Serial baud 38400 will be used to transmit some logs. (Some controllers use the same Serial ports to communicate w the module I use, If uploading code fails, remove pin connection of TX/RX!)
+- `#define DEBUG_MODE`: Enabled debugging, Serial baud `9600` will be used to transmit some logs. (Some controllers use the same Serial ports to communicate with the module I use, If uploading code fails, remove pin connection of TX/RX in order to let it boot/write bytes!)
 
 # Frames
 ## Frame to SLAVE (from MASTER)
