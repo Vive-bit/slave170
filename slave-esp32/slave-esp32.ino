@@ -104,6 +104,11 @@ void setCurrentBlinkState(BlinkState state) {
   modeEndTime = (state == ERROR || state == SUCCESS) ? lastToggle + currentBlinkInterval : 0;;
 }
 
+bool isUnsafePin(uint8_t pin) {
+  if (pin == RX_PIN || pin == TX_PIN || pin == DE_RE_PIN || pin == STATUS_LED_PIN) return true;
+  return false;
+}
+
 // DE/RE
 void setTransmitMode(bool en) {
   digitalWrite(DE_RE_PIN, en ? HIGH : LOW);
