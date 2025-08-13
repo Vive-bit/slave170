@@ -25,7 +25,7 @@ enum BlinkState { IDLE, TIMEOUT, ERROR, SUCCESS };
 enum Operation : uint8_t { XPING = 0x01, XREAD = 0x02, XWRITE = 0x03 };
 enum Mode : uint8_t { XDIGITAL = 0x01, XANALOG = 0x02 };
 enum RequestType : uint8_t { XMASTER = 0x01, XSLAVE = 0x02, XERROR = 0x03 };
-enum ErrorType : uint8_t { XLENGTH_PING = 0x01, XLENGTH_READ = 0x02, XLENGTH_WRITE = 0x03, MISSING_OPERATION = 0x04, XLENGTH_MAX_FRAME = 0x05, XPING_TIMEOUT = 0x06, XTIMELIMIT_EXCEEDED = 0x07, XRESENDING_FRAME = 0x08 };
+enum ErrorType : uint8_t { XLENGTH_PING = 0x01, XLENGTH_READ = 0x02, XLENGTH_WRITE = 0x03, MISSING_OPERATION = 0x04, XLENGTH_MAX_FRAME = 0x05, XPING_TIMEOUT = 0x06, XTIMELIMIT_EXCEEDED = 0x07, XRESENDING_FRAME = 0x08, XUNSAFE_PIN = 0x09 };
 
 // WATCHDOG
 static constexpr unsigned long MAX_ON_TIME = 30000; // max pin HIGH time [microseconds]
@@ -292,6 +292,8 @@ bool handleRequest(const uint8_t* f, const uint32_t frameLen) {
     
     case XREAD: {
       uint8_t pin = f[6];
+      if (isUnsafePin(pin)) { sendErrorResponse(XUNSAFE_PIN, reqId); setCurrentBlinkState(ERROR); return false; }
+      pinMode(pin, INPUT); 
       uint16_t out = (mode == XDIGITAL) ? digitalRead(pin) : (mode == XANALOG) ? analogRead(pin) : 0;
       uint8_t payload[] = { byte(out >> 8), byte(out) };
       uint8_t len = buildFrame(frame, START_BYTE, FRAME_TYPE_RESPONSE, header, sizeof(header), payload, sizeof(payload));
@@ -304,7 +306,9 @@ bool handleRequest(const uint8_t* f, const uint32_t frameLen) {
     case XWRITE: {
       uint16_t val = (uint16_t(f[6]) << 8) | f[7];
       uint8_t pin = f[8];
+      if (isUnsafePin(pin)) { sendErrorResponse(XUNSAFE_PIN, reqId); setCurrentBlinkState(ERROR); return false; }
       if (mode == XDIGITAL) {
+        pinMode(pin, OUTPUT);
         digitalWrite(pin, val ? HIGH : LOW);
         if (val) {
           if (expiryCount < sizeof(expiries) / sizeof(expiries[0])) expiries[expiryCount++] = { pin, millis() + MAX_ON_TIME };
@@ -316,6 +320,7 @@ bool handleRequest(const uint8_t* f, const uint32_t frameLen) {
           }
         }
       } else if (mode == XANALOG) {
+        pinMode(pin, OUTPUT);
         analogWrite(pin, val);
       } else {
         setCurrentBlinkState(ERROR);
