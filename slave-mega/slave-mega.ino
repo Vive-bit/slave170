@@ -102,7 +102,7 @@ void setCurrentBlinkState(BlinkState state) {
 }
 
 bool isUnsafePin(uint8_t pin) {
-  if (pin == RX_PIN || pin == TX_PIN || pin == DE_RE_PIN || pin == STATUS_LED_PIN) return true;
+  if (pin == DE_RE_PIN || pin == STATUS_LED_PIN) return true;
   return false;
 }
 
